@@ -24,7 +24,7 @@ import { act } from 'react-dom/test-utils'
 
 import { Sidebar } from '../src/client/Sidebar.tsx'
 import { allLeaves, createSidebarStore, toggleBottomPanel, type SidebarStore } from '../src/client/state.ts'
-import { createBetterSidebarService, type BetterSidebarService } from '../src/client/service.ts'
+import { createSidebarService, type SidebarService } from '../src/client/service.ts'
 import { t } from '../src/client/locales.ts'
 
 /** jsdom has no WebSocket; the agent-terminals push effect constructs one on mount. */
@@ -39,7 +39,7 @@ class FakeWebSocket {
 interface MountedSidebar {
   container: HTMLDivElement
   store: SidebarStore
-  service: BetterSidebarService
+  service: SidebarService
   unmount: () => void
 }
 
@@ -49,7 +49,7 @@ function mountSidebar(): MountedSidebar {
   const container = document.createElement('div')
   document.body.append(container)
   const store = createSidebarStore()
-  const service = createBetterSidebarService(store)
+  const service = createSidebarService(store)
   // Fresh-session seed: the right panel starts OPEN, the bottom panel closed
   // (bottomOpen false → the first expansion is a false→true TRANSITION).
   store.setSession('s1')
@@ -92,7 +92,7 @@ function bottomTabs(store: SidebarStore): Array<{ type: string; title: string }>
 }
 
 /** The stub terminal tab: counts renders so the test can see it actually mount. */
-function registerStubTerminal(service: BetterSidebarService, renders: { count: number }): void {
+function registerStubTerminal(service: SidebarService, renders: { count: number }): void {
   service.registerTab({
     id: 'terminal',
     title: () => 'Terminal',

@@ -27,7 +27,7 @@ import { act } from 'react-dom/test-utils'
 
 import { Sidebar } from '../src/client/Sidebar.tsx'
 import { createSidebarStore, type SidebarStore } from '../src/client/state.ts'
-import { createBetterSidebarService, type BetterSidebarService } from '../src/client/service.ts'
+import { createSidebarService, type SidebarService } from '../src/client/service.ts'
 import { t } from '../src/client/locales.ts'
 
 /** jsdom has no WebSocket; the agent-terminals push effect constructs one on mount. */
@@ -42,7 +42,7 @@ class FakeWebSocket {
 interface MountedSidebar {
   container: HTMLDivElement
   store: SidebarStore
-  service: BetterSidebarService
+  service: SidebarService
   unmount: () => void
 }
 
@@ -52,7 +52,7 @@ function mountSidebar(): MountedSidebar {
   const container = document.createElement('div')
   document.body.append(container)
   const store = createSidebarStore()
-  const service = createBetterSidebarService(store)
+  const service = createSidebarService(store)
   // Fresh-session seed: the panel starts OPEN (openByDefault default true).
   store.setSession('s1')
   // useSyncExternalStore requires STABLE snapshots across calls (the real DSH

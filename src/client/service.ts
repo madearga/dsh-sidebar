@@ -1,5 +1,5 @@
 /**
- * The BetterSidebar client service: a registry that external plugins use
+ * The Sidebar client service: a registry that external plugins use
  * to contribute sidebar tab types and file previewers. The service is
  * published to the cordis context as `ctx.dshSidebar` (see
  * {@link ../context-types.ts}); consumers declare it in `inject` and call
@@ -78,7 +78,7 @@ export interface SidebarSettingToggle {
 /** Props of a descriptor's custom settings panel (`settings.render`). */
 export interface SidebarSettingsRenderProps {
   store: SidebarStore
-  service: BetterSidebarService
+  service: SidebarService
   prefs: SidebarPrefs
   /** This descriptor's own persisted settings blob (from `pluginSettings[id]`). */
   pluginSettings: Record<string, unknown>
@@ -275,7 +275,7 @@ export interface OpenTabSeed {
 /**
  * The registry service published as `ctx.dshSidebar`.
  */
-export interface BetterSidebarService {
+export interface SidebarService {
   registerTab(descriptor: TabDescriptor): () => void
   registerFileViewer(descriptor: FileViewerDescriptor): () => void
   getTabs(): readonly TabDescriptor[]
@@ -384,9 +384,9 @@ export const SIDEBAR_SERVICE_VERSION = '0.12.1'
  * are never removed). Each string names a v0.12.0+ capability:
  * - 'badge': TabDescriptor.badge
  * - 'tabLifecycle': TabDescriptor.onOpen/onActivate/onClose
- * - 'updateTab': BetterSidebarService.updateTab
- * - 'openFile': BetterSidebarService.openFile
- * - 'targetedOpen': BetterSidebarService.openTab(seed, scope?)
+ * - 'updateTab': SidebarService.updateTab
+ * - 'openFile': SidebarService.openFile
+ * - 'targetedOpen': SidebarService.openTab(seed, scope?)
  * - 'stateSubscription': getSnapshot/subscribeState
  * - 'tabMeta': SidebarTab.meta (seeds, createTab, updateTab, persistence)
  * - 'pluginSettings': SidebarSettingsDeclaration.pluginToggles/render
@@ -412,11 +412,11 @@ function safeCall(fn: () => void): void {
 }
 
 /**
- * Create one BetterSidebar service bound to a store. The service owns the
+ * Create one Sidebar service bound to a store. The service owns the
  * tab/viewer registries (Map + listener set) and proxies openTab/closeTab
  * to the store's reducer. One instance per client plugin activation.
  */
-export function createBetterSidebarService(store: SidebarStore): BetterSidebarService {
+export function createSidebarService(store: SidebarStore): SidebarService {
   const tabs = new Map<string, TabDescriptor>()
   const viewers = new Map<string, FileViewerDescriptor>()
   const listeners = new Set<() => void>()

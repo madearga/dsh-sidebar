@@ -27,13 +27,13 @@ cat > "$WORK/check.ts" <<'EOF'
 import { SIDEBAR_FEATURES, SIDEBAR_SERVICE_VERSION } from 'dsh-sidebar/client/service'
 import type {} from 'dsh-sidebar/client/service'
 import type {
-  BetterSidebarService, FileViewerDescriptor, OpenTabSeed, SidebarSettingsRenderProps,
+  SidebarService, FileViewerDescriptor, OpenTabSeed, SidebarSettingsRenderProps,
   TabComponentProps, TabDescriptor,
 } from 'dsh-sidebar/client/service'
 import type { SessionScope, SidebarSnapshot, SidebarState, SidebarStore, SidebarTab } from 'dsh-sidebar/client/service'
 import type { SidebarPrefs } from 'dsh-sidebar/client/service'
 
-declare const ctx: { dshSidebar: BetterSidebarService }
+declare const ctx: { dshSidebar: SidebarService }
 const tab: TabDescriptor = {
   id: 'x:tab',
   title: 'X',

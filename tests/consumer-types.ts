@@ -16,7 +16,7 @@ import {
   SIDEBAR_SERVICE_VERSION,
 } from '../src/client/service.ts'
 import type {
-  BetterSidebarService,
+  SidebarService,
   FileFetchStrategy,
   FileViewerDescriptor,
   FileViewerProps,
@@ -101,8 +101,8 @@ const viewer: FileViewerDescriptor = {
 }
 
 /** The full service surface, exercised exactly as consumers call it. */
-declare const ctx: { dshSidebar: BetterSidebarService }
-const service: BetterSidebarService = ctx.dshSidebar
+declare const ctx: { dshSidebar: SidebarService }
+const service: SidebarService = ctx.dshSidebar
 service.registerTab(tab)
 service.registerFileViewer(viewer)
 service.getTabs()

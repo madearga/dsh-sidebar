@@ -11,14 +11,14 @@ import { describe, expect, it } from 'vitest'
 import './browser-globals.ts'
 
 import type { Context } from '../src/context-types.ts'
-import { createBetterSidebarService } from '../src/client/service.ts'
+import { createSidebarService } from '../src/client/service.ts'
 import { createSidebarStore } from '../src/client/state.ts'
 import { allLeaves } from '../src/client/state.ts'
 import { registerBuiltins } from '../src/client/builtins/index.ts'
 
-function setup(): { service: ReturnType<typeof createBetterSidebarService>; store: ReturnType<typeof createSidebarStore>; dispose: () => void } {
+function setup(): { service: ReturnType<typeof createSidebarService>; store: ReturnType<typeof createSidebarStore>; dispose: () => void } {
   const store = createSidebarStore()
-  const service = createBetterSidebarService(store)
+  const service = createSidebarService(store)
   const dispose = registerBuiltins({} as Context, service)
   return { service, store, dispose }
 }

@@ -26,7 +26,7 @@
  * need them — e.g. the `ws` upgrade hook in src/index.ts).
  */
 import type { Context } from 'cordis'
-import type { BetterSidebarService } from './client/service.ts'
+import type { SidebarService } from './client/service.ts'
 
 /** The request face route handlers see (structural subset of node's
  *  IncomingMessage: the URL/method/header reads and the async body
@@ -447,7 +447,7 @@ declare module 'cordis' {
      * and file previewers here. Provided by the client half (see
      * {@link ./client/index.tsx}); undefined on the host side.
      */
-    dshSidebar: BetterSidebarService
+    dshSidebar: SidebarService
     /**
      * Subscribe to the session append feed (mirror of the cordis event API):
      * the listener receives every appended session event with the LIVE
@@ -475,7 +475,7 @@ declare module 'cordis' {
  */
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    dshSidebar: BetterSidebarService
+    dshSidebar: SidebarService
   }
 }
 

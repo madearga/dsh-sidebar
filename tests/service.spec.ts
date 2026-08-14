@@ -1,5 +1,5 @@
 /**
- * Tests for the BetterSidebar service registry: register/dispose lifecycle,
+ * Tests for the Sidebar service registry: register/dispose lifecycle,
  * matchFileViewer priority/exts/detect algorithm, and openTab dedupe.
  */
 import { describe, it, expect } from 'vitest'
@@ -20,13 +20,13 @@ if (g.localStorage === undefined) {
   }
 }
 
-import { createBetterSidebarService, SIDEBAR_FEATURES, SIDEBAR_SERVICE_VERSION } from '../src/client/service.ts'
+import { createSidebarService, SIDEBAR_FEATURES, SIDEBAR_SERVICE_VERSION } from '../src/client/service.ts'
 import { createSidebarStore, allLeaves, makeDefaultState, openDiffTab, sanitizeState } from '../src/client/state.ts'
 
-describe('BetterSidebar service', () => {
+describe('Sidebar service', () => {
   it('registerTab adds to the registry and dispose removes it', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     expect(service.getTabs()).toHaveLength(0)
     const dispose = service.registerTab({
       id: 'test:tab',
@@ -42,14 +42,14 @@ describe('BetterSidebar service', () => {
 
   it('registerTab throws on duplicate id', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'dup', title: 'A', component: () => null })
     expect(() => service.registerTab({ id: 'dup', title: 'B', component: () => null })).toThrow()
   })
 
   it('registerFileViewer adds and dispose removes', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     expect(service.getFileViewers()).toHaveLength(0)
     const dispose = service.registerFileViewer({
       id: 'csv',
@@ -64,7 +64,7 @@ describe('BetterSidebar service', () => {
 
   it('subscribe fires on register and dispose', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     let calls = 0
     const unsub = service.subscribe(() => { calls++ })
     const dispose = service.registerTab({ id: 'x', title: 'X', component: () => null })
@@ -81,7 +81,7 @@ describe('enable switches (declarative settings)', () => {
   /** A fresh store + service with one tab and one viewer registered. */
   const setup = () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'explorer', title: 'Explorer', component: () => null })
     service.registerFileViewer({ id: 'image', exts: ['png'], fetchStrategy: 'mediaUrl', component: () => null })
     return { store, service }
@@ -131,7 +131,7 @@ describe('enable switches (declarative settings)', () => {
 describe('matchFileViewer', () => {
   it('matches by extension', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'img', exts: ['png', 'jpg'], fetchStrategy: 'mediaUrl', component: () => null })
     expect(service.matchFileViewer('photo.png')?.id).toBe('img')
     expect(service.matchFileViewer('photo.JPG')?.id).toBe('img')
@@ -140,7 +140,7 @@ describe('matchFileViewer', () => {
 
   it('higher priority wins on extension conflict', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'basic', exts: ['png'], priority: 0, fetchStrategy: 'mediaUrl', component: () => null })
     service.registerFileViewer({ id: 'advanced', exts: ['png'], priority: 10, fetchStrategy: 'custom', component: () => null })
     expect(service.matchFileViewer('x.png')?.id).toBe('advanced')
@@ -148,7 +148,7 @@ describe('matchFileViewer', () => {
 
   it('catch-all (exts: []) matches anything at lowest priority', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'catchall', exts: [], priority: -100, fetchStrategy: 'fsRead', component: () => null })
     service.registerFileViewer({ id: 'img', exts: ['png'], priority: 0, fetchStrategy: 'mediaUrl', component: () => null })
     expect(service.matchFileViewer('x.png')?.id).toBe('img')
@@ -157,7 +157,7 @@ describe('matchFileViewer', () => {
 
   it('detect claims files the viewer would otherwise miss, at its priority', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     // by-magic does not match 'bin' by extension; only its detect (PNG magic)
     // can claim it — and only when head bytes are available.
     service.registerFileViewer({ id: 'by-ext', exts: ['bin'], priority: 5, fetchStrategy: 'fsRead', component: () => null })
@@ -180,7 +180,7 @@ describe('matchFileViewer', () => {
 
   it('priority decides first: a higher-priority exts match beats a lower-priority detect', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'by-ext', exts: ['bin'], priority: 10, fetchStrategy: 'fsRead', component: () => null })
     service.registerFileViewer({
       id: 'by-magic',
@@ -197,7 +197,7 @@ describe('matchFileViewer', () => {
 
   it('a catch-all with detect is sniff-only: it never blind-claims without head', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'img', exts: ['png'], priority: 0, fetchStrategy: 'mediaUrl', component: () => null })
     service.registerFileViewer({
       id: 'magic-sniffer',
@@ -217,7 +217,7 @@ describe('matchFileViewer', () => {
 
   it('returns undefined when no viewer matches and no catch-all', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerFileViewer({ id: 'img', exts: ['png'], fetchStrategy: 'mediaUrl', component: () => null })
     expect(service.matchFileViewer('doc.txt')).toBeUndefined()
   })
@@ -226,7 +226,7 @@ describe('matchFileViewer', () => {
 describe('service.openTab dedupe', () => {
   it('dedupeKey focuses existing tab instead of duplicating', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'singleton',
       title: 'Singleton',
@@ -243,7 +243,7 @@ describe('service.openTab dedupe', () => {
 
   it('no dedupeKey opens a new tab for each distinct id', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'multi',
       title: 'Multi',
@@ -259,7 +259,7 @@ describe('service.openTab dedupe', () => {
 
   it('reopening with the same id focuses the existing tab (id safety net)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'multi',
       title: 'Multi',
@@ -275,7 +275,7 @@ describe('service.openTab dedupe', () => {
 
   it('createTab mints custom ids and patches state', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'counter',
       title: 'Counter',
@@ -298,7 +298,7 @@ describe('service.openTab dedupe', () => {
 
   it('a caller-provided title wins over the descriptor title (editor shows the file name)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: () => 'Editor', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'editor', title: 'main.ts', path: '/p/main.ts' })
@@ -309,7 +309,7 @@ describe('service.openTab dedupe', () => {
 
   it('a url seed lands the tab with its path pre-set (the sidebar-browser navigation seed)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'browser',
       title: () => 'Browser',
@@ -331,7 +331,7 @@ describe('service.openTab dedupe', () => {
 
   it('the descriptor title is the default when no title is given', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'plain', title: () => 'Plain', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'plain' })
@@ -342,7 +342,7 @@ describe('service.openTab dedupe', () => {
 
   it('single: true dedupes like dedupeKey: () => id (sugar)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'singleton', title: 'Singleton', single: true, component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'singleton' })
@@ -354,7 +354,7 @@ describe('service.openTab dedupe', () => {
 
   it('an explicit dedupeKey wins over single: true', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'multi',
       title: 'Multi',
@@ -376,7 +376,7 @@ describe('service.openTab dedupe', () => {
 
   it('available receives ctx, scope and the live state (superset signature)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const seen: unknown[] = []
     service.registerTab({
       id: 'gated',
@@ -394,7 +394,7 @@ describe('service.openTab dedupe', () => {
 
   it('openDiffTab and the service dedupeKey agree on diff identity (per-change id rule)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'diff',
       title: 'Diff',
@@ -418,7 +418,7 @@ describe('service.openTab dedupe', () => {
 describe('service.openTab across the two panels', () => {
   it('openTab lands in the bottom tree when the active pane lives there', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'git', title: 'Git', component: () => null })
     store.setSession('s1')
     store.reduce(s => ({ ...s, activePane: (s.bottomSplits as { id: string }).id }))
@@ -430,7 +430,7 @@ describe('service.openTab across the two panels', () => {
 
   it('dedupeKey focuses an existing instance in the OTHER tree (single-instance across panels)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'singleton',
       title: 'Singleton',
@@ -453,7 +453,7 @@ describe('service.openTab across the two panels', () => {
 
   it('closeTab by id closes a tab living in the bottom tree', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'git', title: 'Git', component: () => null })
     store.setSession('s1')
     store.reduce(s => ({ ...s, activePane: (s.bottomSplits as { id: string }).id }))
@@ -480,7 +480,7 @@ describe('service.openTab auto-expand for content opens', () => {
     setWidth(390)
     try {
       const store = createSidebarStore()
-      const service = createBetterSidebarService(store)
+      const service = createSidebarService(store)
       service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
       store.setSession('s1')
       store.reduce(s => ({ ...s, panelOpen: false }))
@@ -495,7 +495,7 @@ describe('service.openTab auto-expand for content opens', () => {
     setWidth(390)
     try {
       const store = createSidebarStore()
-      const service = createBetterSidebarService(store)
+      const service = createSidebarService(store)
       service.registerTab({ id: 'browser', title: 'Browser', component: () => null })
       store.setSession('s1')
       store.reduce(s => ({ ...s, panelOpen: false }))
@@ -510,7 +510,7 @@ describe('service.openTab auto-expand for content opens', () => {
     setWidth(390)
     try {
       const store = createSidebarStore()
-      const service = createBetterSidebarService(store)
+      const service = createSidebarService(store)
       service.registerTab({ id: 'explorer', title: 'Explorer', component: () => null })
       store.setSession('s1')
       store.reduce(s => ({ ...s, panelOpen: false }))
@@ -523,7 +523,7 @@ describe('service.openTab auto-expand for content opens', () => {
 
   it('expands the collapsed right panel for a path (file) open on a wide viewport', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
     store.setSession('s1')
     collapseRightPanel(store)
@@ -535,7 +535,7 @@ describe('service.openTab auto-expand for content opens', () => {
 
   it('expands the collapsed right panel for a URL (browser) open on a wide viewport', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'browser', title: 'Browser', component: () => null })
     store.setSession('s1')
     collapseRightPanel(store)
@@ -545,7 +545,7 @@ describe('service.openTab auto-expand for content opens', () => {
 
   it('a wide-viewport path open landing in the bottom tree expands the bottom panel instead', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
     store.setSession('s1')
     // The last-touched pane lives in the bottom tree and BOTH panels are
@@ -560,7 +560,7 @@ describe('service.openTab auto-expand for content opens', () => {
 
   it('keeps a collapsed panel for a type-only open on a wide viewport', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'explorer', title: 'Explorer', component: () => null })
     store.setSession('s1')
     collapseRightPanel(store)
@@ -572,7 +572,7 @@ describe('service.openTab auto-expand for content opens', () => {
     setWidth(390)
     try {
       const store = createSidebarStore()
-      const service = createBetterSidebarService(store)
+      const service = createSidebarService(store)
       service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
       store.setSession('s1')
       service.openTab({ type: 'editor', title: 'main.ts', path: '/p/main.ts' })
@@ -586,7 +586,7 @@ describe('service.openTab auto-expand for content opens', () => {
 
   it('expands on a wide viewport even when the open focuses an existing tab (id dedupe)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'editor', title: 'main.ts', path: '/p/main.ts' })
@@ -603,11 +603,11 @@ describe('version and feature detection (v0.12.0)', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const pkg = JSON.parse(require('node:fs').readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
     expect(SIDEBAR_SERVICE_VERSION).toBe(pkg.version)
-    expect(createBetterSidebarService(createSidebarStore()).version).toBe(SIDEBAR_SERVICE_VERSION)
+    expect(createSidebarService(createSidebarStore()).version).toBe(SIDEBAR_SERVICE_VERSION)
   })
 
   it('advertises every v0.12.0 capability in the features list', () => {
-    const service = createBetterSidebarService(createSidebarStore())
+    const service = createSidebarService(createSidebarStore())
     for (const feature of SIDEBAR_FEATURES) {
       expect(service.features).toContain(feature)
     }
@@ -617,7 +617,7 @@ describe('version and feature detection (v0.12.0)', () => {
 describe('state subscription (v0.12.0)', () => {
   it('getSnapshot mirrors the store snapshot (sessionId/state/prefs)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     store.setSession('s1')
     const snapshot = service.getSnapshot()
     expect(snapshot.sessionId).toBe('s1')
@@ -627,7 +627,7 @@ describe('state subscription (v0.12.0)', () => {
 
   it('subscribeState fires on state changes but NOT on registry changes', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     store.setSession('s1')
     let calls = 0
     const unsub = service.subscribeState(() => { calls++ })
@@ -645,7 +645,7 @@ describe('state subscription (v0.12.0)', () => {
 describe('updateTab (v0.12.0)', () => {
   it('patches title / path / meta of an open tab', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'doc', title: 'Doc', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'doc', title: 'Doc', id: 'doc:1' })
@@ -661,7 +661,7 @@ describe('updateTab (v0.12.0)', () => {
 describe('activateTab (v0.12.0)', () => {
   it('activates a tab in either tree and fires onActivate with the session scope', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const seen: Array<{ tab: string; sessionId: string }> = []
     service.registerTab({
       id: 'git',
@@ -686,7 +686,7 @@ describe('activateTab (v0.12.0)', () => {
 describe('targeted openTab (v0.12.0)', () => {
   it('lands the open in the target session without switching the UI session', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'notes', title: 'Notes', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'notes', title: 'Notes', id: 'notes:1' }, { sessionId: 's2' })
@@ -703,7 +703,7 @@ describe('targeted openTab (v0.12.0)', () => {
 
   it('a scope naming the active session behaves exactly like a plain open (notify included)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'explorer', title: 'Explorer', component: () => null })
     store.setSession('s1')
     let calls = 0
@@ -715,7 +715,7 @@ describe('targeted openTab (v0.12.0)', () => {
 
   it('dedupe runs against the TARGET session (opens there focus an existing tab of that session)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'notes', title: 'Notes', single: true, component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'notes', title: 'Notes' }, { sessionId: 's2' })
@@ -729,7 +729,7 @@ describe('targeted openTab (v0.12.0)', () => {
 describe('openFile (v0.12.0)', () => {
   it('opens the file in the editor tab of the scope session with a basename title', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: () => 'Editor', component: () => null })
     store.setSession('s1')
     service.openFile({ sessionId: 's1', cwd: '/p' }, '/p/src/main.ts')
@@ -749,7 +749,7 @@ describe('tab lifecycle callbacks (v0.12.0)', () => {
   /** A descriptor with recording callbacks, plus a count of onOpen/onActivate/onClose. */
   const setup = () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const events: string[] = []
     service.registerTab({
       id: 'life',
@@ -788,7 +788,7 @@ describe('tab lifecycle callbacks (v0.12.0)', () => {
 
   it('lifecycle callbacks receive the session scope (cwd included when given)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     let seen: { sessionId: string; cwd?: string } | undefined
     service.registerTab({
       id: 'scoped',
@@ -803,7 +803,7 @@ describe('tab lifecycle callbacks (v0.12.0)', () => {
 
   it('a throwing callback is swallowed and never breaks the open', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'boom',
       title: 'Boom',
@@ -830,7 +830,7 @@ describe('tab lifecycle callbacks (v0.12.0)', () => {
 describe('tab meta (v0.12.0)', () => {
   it('a seed meta rides onto the minted tab and survives a reload round-trip', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'db', title: 'DB', component: () => null })
     store.setSession('s1')
     service.openTab({ type: 'db', title: 'DB', id: 'db:1', meta: { table: 'users', page: 3 } })
@@ -853,7 +853,7 @@ describe('tab meta (v0.12.0)', () => {
 describe('lifecycle classification vs dedupe (codex review fixes)', () => {
   it('a key-dedupe focus with a NEW id fires onActivate with the REAL tab (no phantom onOpen)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const events: Array<{ kind: string; tabId?: string }> = []
     service.registerTab({
       id: 'doc',
@@ -881,7 +881,7 @@ describe('lifecycle classification vs dedupe (codex review fixes)', () => {
 
   it('an id safety-net focus (same id) fires onActivate, not onOpen', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const events: string[] = []
     service.registerTab({
       id: 'multi',
@@ -901,7 +901,7 @@ describe('lifecycle classification vs dedupe (codex review fixes)', () => {
 describe('independent CR follow-up fixes', () => {
   it('onOpen for a url-created tab receives the LANDED tab (path = url)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     let seenPath: string | undefined
     service.registerTab({
       id: 'web',
@@ -916,7 +916,7 @@ describe('independent CR follow-up fixes', () => {
 
   it('a url seed NEVER overwrites the path of a dedupe-focused tab', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({
       id: 'web',
       title: 'Web',
@@ -935,7 +935,7 @@ describe('independent CR follow-up fixes', () => {
 
   it('closing / activating an unknown tab id is a strict no-op (no notify)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'x', title: 'X', component: () => null })
     store.setSession('s1')
     let calls = 0
@@ -947,7 +947,7 @@ describe('independent CR follow-up fixes', () => {
 
   it('a targeted open into an INACTIVE session never auto-expands its panels', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     service.registerTab({ id: 'editor', title: 'Editor', component: () => null })
     store.setSession('s1')
     // The target session starts collapsed.
@@ -962,7 +962,7 @@ describe('independent CR follow-up fixes', () => {
 
   it('closeTab/activateTab accept an optional scope that rides to the callback', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const seen: Array<{ kind: string; cwd?: string }> = []
     service.registerTab({
       id: 'life',

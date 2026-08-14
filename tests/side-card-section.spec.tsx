@@ -18,14 +18,14 @@ import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 import { createSidebarStore, type SidebarStore } from '../src/client/state.ts'
-import { createBetterSidebarService, type BetterSidebarService } from '../src/client/service.ts'
+import { createSidebarService, type SidebarService } from '../src/client/service.ts'
 import { SIDEBAR_PREFS_DEFAULTS } from '../src/prefs-shared.ts'
 import { FeatureSettingsRows, mergePluginSetting, SideCardSection, type SideCardSectionProps } from '../src/client/SideCardSection.tsx'
 
 /** One tab + one viewer + the subagent-style nested toggle under a tab. */
-function mount(): { store: SidebarStore; service: BetterSidebarService } {
+function mount(): { store: SidebarStore; service: SidebarService } {
   const store = createSidebarStore()
-  const service = createBetterSidebarService(store)
+  const service = createSidebarService(store)
   service.registerTab({
     id: 'explorer',
     title: () => 'Explorer',
@@ -58,7 +58,7 @@ function mount(): { store: SidebarStore; service: BetterSidebarService } {
   return { store, service }
 }
 
-function renderSection(store: SidebarStore, service: BetterSidebarService): string {
+function renderSection(store: SidebarStore, service: SidebarService): string {
   return renderToString(createElement(
     SideCardSection,
     { store, service } as unknown as SideCardSectionProps,

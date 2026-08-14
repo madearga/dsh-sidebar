@@ -50,7 +50,7 @@ export type { SidebarConfig, ResolvedSidebarConfig }
 // registerTab / registerFileViewer arguments without reaching into /client.
 export type { Context } from './context-types.ts'
 export type {
-  BetterSidebarService,
+  SidebarService,
   TabDescriptor,
   TabComponentProps,
   FileViewerDescriptor,

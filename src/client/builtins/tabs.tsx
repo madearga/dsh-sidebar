@@ -1,7 +1,7 @@
 /**
  * The 7 built-in tab descriptors: the plugin registers its own pages
  * (explorer / git / terminal / browser / subagent / editor / diff) through
- * the same {@link BetterSidebarService} external plugins use — eating its
+ * the same {@link SidebarService} external plugins use — eating its
  * own dogfood. The terminal descriptor owns its quota (`TERMINAL_LIMIT`)
  * and mints `terminal:<n>` ids through `createTab`; the browser mints
  * `browser:<n>` the same way (no quota).

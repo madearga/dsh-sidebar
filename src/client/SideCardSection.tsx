@@ -62,7 +62,7 @@ import { AddPluginModal, type PluginKind } from './add-plugin-modal.tsx'
 import { t } from './locales.ts'
 import type { SidebarStore } from './state.ts'
 import type {
-  BetterSidebarService,
+  SidebarService,
   FileViewerDescriptor,
   SidebarSettingsRenderProps,
   SidebarSettingToggle,
@@ -73,7 +73,7 @@ import css from './SideCardSection.module.css'
 /** Injected business face: the shared store (prefs cache) + the sidebar service (registries). */
 export interface SideCardSectionInjected {
   store: SidebarStore
-  service: BetterSidebarService
+  service: SidebarService
 }
 
 /** Full section props: the runtime share plus the injected face. */
@@ -313,7 +313,7 @@ export function SettingsBody(props: {
   feature: TabDescriptor | FileViewerDescriptor
   prefs: SidebarPrefs
   store: SidebarStore
-  service: BetterSidebarService
+  service: SidebarService
   onToggle: (toggle: SidebarSettingToggle, next: boolean) => void
   onCommit: (toggle: SidebarSettingToggle, raw: string) => string
   onPluginToggle: (toggle: SidebarSettingToggle, next: boolean) => void

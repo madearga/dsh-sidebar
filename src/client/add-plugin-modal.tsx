@@ -21,7 +21,7 @@
  */
 import { useState } from 'react'
 import { Modal, writeClipboard } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { BetterSidebarService } from './service.ts'
+import type { SidebarService } from './service.ts'
 import { PLUGIN_TOPIC_URL, type PluginEntry } from './plugins-shared.ts'
 import { builtinTabPlugins } from './plugins-tabs.ts'
 import { builtinViewerPlugins } from './plugins-viewers.ts'
@@ -42,7 +42,7 @@ const COPIED_FEEDBACK_MS = 1500
 
 /** The modal body: the GitHub topic button + the recommended plugin list
  *  with per-entry jump/copy buttons (extracted for direct testing). */
-export function PluginListBody(props: { service: BetterSidebarService; kind: PluginKind }) {
+export function PluginListBody(props: { service: SidebarService; kind: PluginKind }) {
   const { service, kind } = props
   // Which entry's copy button currently shows the "已复制" feedback.
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -132,7 +132,7 @@ export function PluginListBody(props: { service: BetterSidebarService; kind: Plu
 }
 
 /** The modal itself (mounted only while open — see the module comment). */
-export function AddPluginModal(props: { service: BetterSidebarService; onClose: () => void; kind: PluginKind }) {
+export function AddPluginModal(props: { service: SidebarService; onClose: () => void; kind: PluginKind }) {
   const { service, onClose, kind } = props
   return (
     <Modal

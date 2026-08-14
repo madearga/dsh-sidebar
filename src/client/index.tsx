@@ -12,7 +12,7 @@ import { createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import type { Context } from '../context-types.ts'
 import { createSidebarStore } from './state.ts'
-import { createBetterSidebarService } from './service.ts'
+import { createSidebarService } from './service.ts'
 import { resetChunks } from './chunk-loader.ts'
 import { registerBuiltins } from './builtins/index.ts'
 import { Sidebar } from './Sidebar.tsx'
@@ -63,7 +63,7 @@ export function apply(ctx: Context): void {
   // file previewers through `ctx.dshSidebar.registerTab/registerFileViewer`.
   // Published before the panel mounts so consumers injecting 'dshSidebar'
   // are ready by the time the sidebar renders.
-  const service = createBetterSidebarService(sidebarStore)
+  const service = createSidebarService(sidebarStore)
   ctx.provide('dshSidebar', service)
   // Register the plugin's own built-in tabs and viewers through the same
   // service (eating our own dogfood). The disposer unregisters them on

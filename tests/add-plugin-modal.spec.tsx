@@ -22,7 +22,7 @@ import { PLUGIN_TOPIC_URL, type PluginEntry } from '../src/client/plugins-shared
 import { builtinTabPlugins } from '../src/client/plugins-tabs.ts'
 import { builtinViewerPlugins } from '../src/client/plugins-viewers.ts'
 import { AddPluginModal, PluginListBody } from '../src/client/add-plugin-modal.tsx'
-import { createBetterSidebarService } from '../src/client/service.ts'
+import { createSidebarService } from '../src/client/service.ts'
 import { createSidebarStore } from '../src/client/state.ts'
 
 // The act() environment flag (React 18.2 reads it before flushing effects).
@@ -33,7 +33,7 @@ const officeEntry = builtinViewerPlugins[0] as PluginEntry
 describe('PluginListBody (render)', () => {
   it('viewer kind renders the topic button and the office catalog entry', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const html = renderToString(createElement(PluginListBody, { service, kind: 'viewer' }))
     // The topic is a BUTTON (window.open in a new tab), not an anchor.
     expect(html).toContain('Browse more plugins on GitHub')
@@ -50,7 +50,7 @@ describe('PluginListBody (render)', () => {
 
   it('tab kind renders the sentinel entry (its own catalog, no office entry)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const html = renderToString(createElement(PluginListBody, { service, kind: 'tab' }))
     expect(html).toContain('dsh-sentinel 唤醒系统')
     expect(html).toContain('github:fuhefei/dsh-sentinel')
@@ -64,7 +64,7 @@ describe('AddPluginModal wiring', () => {
     // renderer refuses portals, so mount it client-side (createRoot + act
     // in jsdom) and assert on the portaled body HTML.
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     for (const kind of ['tab', 'viewer'] as const) {
       const container = document.createElement('div')
       document.body.append(container)
@@ -86,7 +86,7 @@ describe('AddPluginModal wiring', () => {
 })
 
 /** Mount PluginListBody and click its copy button (the first one). */
-function mountBody(service: ReturnType<typeof createBetterSidebarService>, kind: 'tab' | 'viewer' = 'viewer'):
+function mountBody(service: ReturnType<typeof createSidebarService>, kind: 'tab' | 'viewer' = 'viewer'):
   { clickCopy: () => void; buttonLabel: () => string | null; unmount: () => void } {
   const container = document.createElement('div')
   document.body.append(container)
@@ -114,7 +114,7 @@ describe('PluginListBody copy click (interactive)', () => {
   it('clicking Copy writes the install script to the clipboard and flashes "Copied"', async () => {
     vi.spyOn(primitives, 'writeClipboard').mockResolvedValue(true)
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
 
     const body = mountBody(service)
     expect(body.buttonLabel()).toBe('Copy')
@@ -129,7 +129,7 @@ describe('PluginListBody copy click (interactive)', () => {
   it('copying does NOT close anything and the modal body stays mounted', async () => {
     vi.spyOn(primitives, 'writeClipboard').mockResolvedValue(true)
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
 
     const body = mountBody(service)
     await body.clickCopy()
@@ -144,7 +144,7 @@ describe('PluginListBody copy click (interactive)', () => {
   it('a DENIED clipboard write shows no "Copied" feedback (never claims a copy that did not happen)', async () => {
     vi.spyOn(primitives, 'writeClipboard').mockResolvedValue(false)
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
 
     const body = mountBody(service)
     await body.clickCopy()
@@ -157,7 +157,7 @@ describe('PluginListBody copy click (interactive)', () => {
 
   it('both the name button and the jump button open the repo in a NEW browser tab (window.open, not a link)', () => {
     const store = createSidebarStore()
-    const service = createBetterSidebarService(store)
+    const service = createSidebarService(store)
     const opened: Array<[string, string, string]> = []
     const original = window.open
     window.open = ((url: string, target: string, features: string) => {
