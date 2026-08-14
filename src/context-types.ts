@@ -36,6 +36,8 @@ export interface SidebarHttpRequest {
   method?: string
   headers: Record<string, string | string[] | undefined>
   [Symbol.asyncIterator](): AsyncIterator<string | Uint8Array>
+  /** Node IncomingMessage close listener (used by the SSE watch route). */
+  on(event: 'close', listener: () => void): void
 }
 
 /** The response face route handlers write to (structural subset of node's
@@ -43,6 +45,8 @@ export interface SidebarHttpRequest {
 export interface SidebarHttpResponse {
   statusCode: number
   writeHead(status: number, headers?: Record<string, string>): void
+  /** Stream body chunk (used by the SSE watch route). */
+  write(chunk: string | Uint8Array): void
   end(body?: string | Uint8Array): void
 }
 

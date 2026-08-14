@@ -15,6 +15,7 @@ import { ExplorerView } from '../ExplorerView.tsx'
 import { EditorHost } from '../EditorHost.tsx'
 import { lazyChunkComponent } from '../lazy-chunk.tsx'
 import { GitView } from '../GitView.tsx'
+import { FollowView } from '../FollowView.tsx'
 import { DiffTab } from '../DiffTab.tsx'
 import { SubagentView } from '../SubagentView.tsx'
 import { BrowserView } from '../BrowserView.tsx'
@@ -71,6 +72,16 @@ export function builtinTabs(ctx: Context): readonly TabDescriptor[] {
       dedupeKey: (tab) => tab.path,
       component: ({ ctx, store, scope, tab }) => (
         <EditorHost ctx={ctx} store={store} scope={scope} path={tab.path ?? ''} title={tab.title} />
+      ),
+    },
+    {
+      id: 'follow',
+      title: () => 'Follow',
+      icon: (size: number) => <IconDiffOutline16 size={size} />,
+      order: 5,
+      single: true,
+      component: ({ ctx, store, scope }) => (
+        <FollowView ctx={ctx} store={store} scope={scope} />
       ),
     },
     {

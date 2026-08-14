@@ -14,6 +14,7 @@
  * processes are keyed by session.
  */
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { watch as watchFs, type FSWatcher } from 'node:fs'
 import { basename, dirname, extname, isAbsolute, join } from 'node:path'
 import type { IncomingMessage } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -646,6 +647,69 @@ export function apply(ctx: Context, config?: SidebarConfig): void {
       }
     },
   }), 'dsh-sidebar: /sidebar/html preview route')
+  // ── Follow Mode: file-change SSE stream ────────────────────────────────
+  // One GET /sidebar/watch?sessionId=...&cwd=... streams debounced file
+  // change events for the session's working directory so the sidebar's
+  // Follow tab can mirror what the agent is touching (auto-open the edited
+  // file, refresh the tree, group changes into review checkpoints). The
+  // stream is session-scoped and closes with the request; the trust fence
+  // is the same as every other /sidebar route. ponytail: fs.watch recursive
+  // is macOS/Linux/Windows-native and good enough for dogfood — swap to
+  // chokidar only if platform gaps show up.
+  ctx.effect(() => ctx.webServer.register({
+    kind: 'prefix',
+    path: '/sidebar/watch',
+    handler: (req, res) => {
+      if (!fence(req)) {
+        res.writeHead(403)
+        res.end('forbidden')
+        return
+      }
+      if (req.method !== 'GET') {
+        res.writeHead(405)
+        res.end()
+        return
+      }
+      const url = new URL(req.url ?? '/', 'http://dsh.internal')
+      const sessionId = url.searchParams.get('sessionId')
+      if (sessionId === null) {
+        res.writeHead(400)
+        res.end('sessionId required')
+        return
+      }
+      const cwd = sessionCwdOf(ctx, sessionId, url.searchParams.get('cwd') ?? undefined)
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-cache, no-transform',
+        'x-accel-buffering': 'no',
+        connection: 'keep-alive',
+      })
+      const pendingPaths = new Set<string>()
+      let flushTimer: ReturnType<typeof setTimeout> | undefined
+      let watcher: FSWatcher | undefined
+      try {
+        watcher = watchFs(cwd, { recursive: true }, (_eventType, filename) => {
+          if (filename === null) return
+          pendingPaths.add(filename)
+          if (flushTimer !== undefined) return
+          flushTimer = setTimeout(() => {
+            flushTimer = undefined
+            const paths = [...pendingPaths]
+            pendingPaths.clear()
+            res.write(`data: ${JSON.stringify({ paths, ts: Date.now() })}\n\n`)
+          }, 250)
+        })
+      } catch (error) {
+        res.write(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : String(error) })}\n\n`)
+        res.end()
+        return
+      }
+      req.on('close', () => {
+        if (flushTimer !== undefined) clearTimeout(flushTimer)
+        watcher?.close()
+      })
+    },
+  }), 'dsh-sidebar: /sidebar/watch SSE route')
 
   // ── Terminal WebSocket ──────────────────────────────────────────────────
   // One upgrade endpoint serves both UI-tab terminals (?tab=...) and

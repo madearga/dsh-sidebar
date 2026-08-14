@@ -56,6 +56,9 @@ export function parsePrefs(value: unknown): SidebarPrefs {
     terminalFontSize: typeof record.terminalFontSize === 'number' && Number.isFinite(record.terminalFontSize)
       ? clampTerminalFontSize(record.terminalFontSize)
       : SIDEBAR_PREFS_DEFAULTS.terminalFontSize,
+    followAutoOpen: typeof record.followAutoOpen === 'boolean'
+      ? record.followAutoOpen
+      : SIDEBAR_PREFS_DEFAULTS.followAutoOpen,
     interceptOpenPath: typeof record.interceptOpenPath === 'boolean'
       ? record.interceptOpenPath
       : SIDEBAR_PREFS_DEFAULTS.interceptOpenPath,

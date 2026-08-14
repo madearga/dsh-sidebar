@@ -27,7 +27,7 @@ describe('built-in tab registrations', () => {
   it('registers the 7 built-in tabs', () => {
     const { service } = setup()
     expect(service.getTabs().map(t => t.id).sort()).toEqual(
-      ['browser', 'diff', 'editor', 'explorer', 'git', 'subagent', 'terminal'],
+      ['browser', 'diff', 'editor', 'explorer', 'follow', 'git', 'subagent', 'terminal'],
     )
   })
 

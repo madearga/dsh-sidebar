@@ -59,6 +59,12 @@ export interface SidebarPrefs {
    * of the Host OS's default application. On by default; the editor tab's
    * own enable switch gates it too (both must be on for the takeover).
    */
+  /**
+   * Whether the Follow tab auto-opens the most recently changed file in the
+   * editor as the agent writes it (Follow Mode). On by default for
+   * dogfooding; the per-session toggle in the Follow tab flips this.
+   */
+  followAutoOpen: boolean
   interceptOpenPath: boolean
   /**
    * Whether the HTML previewer drops its sandboxed iframe. Sandbox ON (the
@@ -140,6 +146,7 @@ export const SIDEBAR_PREFS_DEFAULTS: SidebarPrefs = {
   bottomPanelAutoTerminal: true,
   terminalFontFamily: '',
   terminalFontSize: TERMINAL_FONT_SIZE_DEFAULT,
+  followAutoOpen: true,
   interceptOpenPath: true,
   htmlViewerNoSandbox: false,
   htmlViewerDefaultUnsafe: false,
