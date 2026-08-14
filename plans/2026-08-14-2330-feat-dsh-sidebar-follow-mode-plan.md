@@ -13,7 +13,7 @@ execution: code
 
 ## Goal Capsule
 
-- **Objective:** Build `dsh-sidebar` — a hard fork of `dsh-better-sidebar` v0.11.0, rebranded for github.com/madearga/dsh-sidebar — whose first release adds Follow Mode: the sidebar mirrors the DSH agent's work in real time (auto-open edited file, live diff) plus turn checkpoints (per-turn diff snapshots for sequential review).
+- **Objective:** Build `dsh-sidebar` — a hard fork of `dsh-sidebar` v0.11.0, rebranded for github.com/madearga/dsh-sidebar — whose first release adds Follow Mode: the sidebar mirrors the DSH agent's work in real time (auto-open edited file, live diff) plus turn checkpoints (per-turn diff snapshots for sequential review).
 - **Product authority:** The follow/observability layer (mirror + checkpoints) is active scope. Post-v1 layers (per-line tool-call blame, agent-driven tabs, ambient activity feed) are not active scope. Distribution beyond personal dogfooding is not active scope.
 - **Open blockers:** none.
 
@@ -21,11 +21,11 @@ execution: code
 
 ### Summary
 
-`dsh-sidebar` is a clean, rebranded hard fork of `dsh-better-sidebar` (MIT), published to github.com/madearga/dsh-sidebar, with Follow Mode as its differentiating feature: a toggle that makes editor and diff tabs track the agent's live work, plus a checkpoint strip of per-turn diffs for after-the-fact review. First user is the owner, dogfooded daily against the chat-scrollback status quo.
+`dsh-sidebar` is a clean, rebranded hard fork of `dsh-sidebar` (MIT), published to github.com/madearga/dsh-sidebar, with Follow Mode as its differentiating feature: a toggle that makes editor and diff tabs track the agent's live work, plus a checkpoint strip of per-turn diffs for after-the-fact review. First user is the owner, dogfooded daily against the chat-scrollback status quo.
 
 ### Problem Frame
 
-Today, understanding what a running DSH agent is doing means reading chat scrollback: tool-call cards, file paths, command output. The information is serial and verbose; the operator reconstructs state ("which file is it touching now?") from text. dsh-better-sidebar already owns the right surfaces (editor tabs, diff tabs, terminal) but they are static — they wait for the user to act, files don't refresh when the agent writes them (documented upstream limitation: "no file watcher"), and nothing connects those panels to the agent's event stream. The cost: mistakes surface only when the user stops to read scrollback, often after a turn completes, instead of while they happen.
+Today, understanding what a running DSH agent is doing means reading chat scrollback: tool-call cards, file paths, command output. The information is serial and verbose; the operator reconstructs state ("which file is it touching now?") from text. dsh-sidebar already owns the right surfaces (editor tabs, diff tabs, terminal) but they are static — they wait for the user to act, files don't refresh when the agent writes them (documented upstream limitation: "no file watcher"), and nothing connects those panels to the agent's event stream. The cost: mistakes surface only when the user stops to read scrollback, often after a turn completes, instead of while they happen.
 
 ### Key Decisions
 
@@ -101,7 +101,7 @@ Today, understanding what a running DSH agent is doing means reading chat scroll
 
 - Assumption: DSH session events (tool calls, turn boundaries) are observable host-side by a plugin — the harness records every run in an append-only session log. Exact subscription mechanism is a planning question.
 - Assumption: the fork tracks DSH `0.1.0-rc.6` peer dependencies; compatibility across future rc breaks is the owner's responsibility (accepted under hard fork).
-- Source: fork base is the installed `dsh-better-sidebar` v0.11.0 source tree (MIT), rebranded per R7-R8.
+- Source: fork base is the installed `dsh-sidebar` v0.11.0 source tree (MIT), rebranded per R7-R8.
 
 ### Outstanding Questions
 
